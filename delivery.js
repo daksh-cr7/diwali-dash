@@ -78,7 +78,7 @@ function renderMap() {
     s += `<circle cx="${n.x}" cy="${n.y}" r="5" fill="#2b1650" stroke="#ffb627"/><text x="${n.x}" y="${n.y + 16}" font-size="8" fill="#fff4e2" text-anchor="middle">${n.name}</text>`;
   }
   s += '<text x="30" y="96" font-size="16" text-anchor="middle">&#127978;</text><text x="315" y="96" font-size="16" text-anchor="middle">&#127968;</text>' +
-       '<text id="rider" x="30" y="108" font-size="18" text-anchor="middle">&#128757;</text></svg>';
+       '<text id="rider" x="30" y="108" font-size="18" text-anchor="middle">' + E("\u{1F6F5}", "\u{1F69A}") + '</text></svg>';
   document.getElementById("map").innerHTML = s;
 }
 

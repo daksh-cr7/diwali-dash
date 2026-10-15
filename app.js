@@ -1,3 +1,23 @@
+// OLD PHONES: newer emoji draw as empty boxes. Each emoji is tested once; if it is not drawn, an older look-alike is used.
+const CAT_EMOJI = {"Diyas":"\u{1F525}","Sweets":"\u{1F36C}","Dry fruits":"\u{1F330}","Gift hampers":"\u{1F381}","Rangoli":"\u{1F3A8}","Lights":"\u{1F4A1}",
+  "Chocolates":"\u{1F36B}","Pooja items":"\u{1F514}","Snacks":"\u{1F36A}","Decor":"\u{1F38A}","Tea & coffee":"\u2615","Fresh flowers":"\u{1F33C}",
+  "Cleaning":"\u{1F6C1}","Festive wear":"\u{1F457}"};
+const emojiCache = {};
+function emojiOK(ch) {
+  if (ch in emojiCache) return emojiCache[ch];
+  let ok = true;
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 40;
+    const x = c.getContext("2d"); x.textBaseline = "top"; x.font = "30px sans-serif";
+    const draw = t => { x.clearRect(0, 0, 40, 40); x.fillText(t, 0, 2); return x.getImageData(0, 0, 40, 40).data.join(); };
+    ok = draw(ch) !== draw("\u{10FFFF}");
+  } catch (e) {}
+  return emojiCache[ch] = ok;
+}
+const E = (ch, fallback) => emojiOK(ch) ? ch : fallback;
+// Phone browsers count the address bar in "100vh", which hides the bottom bar. This measures the real visible height instead.
+function setVH() { document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px"); }
+
 const DIWALI = new Date(2026, 10, 8, 18, 0, 0); // change if the date is different
 
 const categories = [
@@ -64,8 +84,9 @@ raw.push(
   ["Kids lehenga set","1 set",899,1299,"\u{1F457}","Festive wear"],["Bangles set","12 pcs",199,320,"\u{1F4FF}","Festive wear"],
   ["Dupatta","1 pc",299,449,"\u{1F9E3}","Festive wear"],["Ethnic jutti","1 pair",499,799,"\u{1F461}","Festive wear"]
 );
+categories.forEach(c => c[0] = E(c[0], CAT_EMOJI[c[1]]));
 const products = raw.map((r, i) => ({
-  id: i, base: r[2], name: r[0], wt: r[1], price: r[2], mrp: r[3], img: r[4], cat: r[5], bogo: !!r[6],
+  id: i, base: r[2], name: r[0], wt: r[1], price: r[2], mrp: r[3], img: E(r[4], CAT_EMOJI[r[5]]), cat: r[5], bogo: !!r[6],
   off: r[6] ? "BUY 1 GET 1" : Math.round((1 - r[2] / r[3]) * 100) + "% OFF"
 }));
 
@@ -280,4 +301,6 @@ renderCats(); showHome(); renderCart(); tick(); updateFlashTimer();
 setInterval(() => { tick(); if (flashTick(products)) refresh(); updateFlashTimer(); }, 1000);
 setInterval(() => { simulateDemand(products); refresh(); }, 12000);
 restore(); document.getElementById("login").hidden = !!profile;
+document.querySelectorAll(".big,.lbig").forEach(e => e.textContent = E("\u{1FA94}", "\u{1F525}"));
+setVH(); window.addEventListener("resize", setVH);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
