@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diwali Dash</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#2a1050">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="phone">
+  <div class="screen">
+    <header class="top">
+      <div class="eta">Delivery in <b>10 minutes</b></div>
+      <div class="loc" id="greet">Welcome</div>
+      <div class="search"><span>&#128269;</span><input id="q" placeholder='Search "diyas"' autocomplete="off"><span class="clr" id="clr" onclick="goHome()" hidden>&#10005;</span></div>
+      <div class="sugg" id="sugg" hidden></div>
+    </header>
+
+    <main id="main">
+      <section class="banner home">
+        <div>
+          <div class="tag">Diwali Dhamaka</div>
+          <h2>Up to 40% off</h2>
+          <p>Buy 1 Get 1 free on sweets</p>
+          <div class="timer" id="timer">Loading...</div>
+        </div>
+        <div class="big">&#129684;</div>
+      </section>
+
+      <section class="home flashbox"><h3>&#9889; Flash sale</h3><div class="ftimer" id="ftimer"></div><div class="flash" id="flash"></div></section>
+      <section class="home flashbox"><h3 id="fytitle">&#10024; For You</h3><div class="ftimer" id="fysub"></div><div class="flash" id="foryou"></div></section>
+      <h3 class="home">Shop by category</h3>
+      <div class="cats home" id="cats"></div>
+
+      <div class="backrow" onclick="goHome()">&#8592; Back to home</div>
+      <h3 id="gridTitle">Festive deals</h3>
+      <div class="grid" id="grid"></div>
+    </main>
+    <div class="catscreen" id="catscreen">
+      <div class="side-col" id="sidecol"></div>
+      <div class="cat-main"><h3 id="cattitle"></h3><div class="grid" id="cgrid"></div></div>
+    </div>
+
+    <div class="cartbar" id="cartbar" onclick="openCart()" hidden>
+      <div><b id="cartCount">0 items</b><br><small id="cartTotal"></small></div>
+      <div class="viewcart">View cart &#8250;</div>
+    </div>
+
+    <section class="cartpanel" id="cartpanel" hidden>
+      <div class="phead"><span class="back" onclick="closeCart()">&#8592;</span> My cart</div>
+      <div class="pbody">
+        <div class="saved" id="saved"></div>
+        <div class="box" id="cartitems"></div>
+        <div class="box" id="recbox" hidden><b>You might also like</b><div class="flash" id="cartrec"></div></div>
+        <div class="box">
+          <div class="coupon"><input id="code" placeholder="Enter coupon code"><button onclick="applyCoupon()">Apply</button></div>
+          <div id="vouchers"></div>
+          <div id="couponmsg"></div>
+        </div>
+        <div class="box" id="bill"></div>
+      </div>
+      <div class="pfoot"><div id="payamt"></div><button class="place" onclick="openAddress()">Place order</button></div>
+      </section>
+
+    <section class="cartpanel" id="trackpanel" hidden>
+      <div class="phead"><span class="back" onclick="closeTrack()">&#8592;</span> Track order</div>
+      <div class="pbody">
+        <div class="box"><div class="eta2" id="eta2"></div><div class="wt" id="osum"></div><div class="steps" id="steps"></div></div>
+        <div class="box"><b>Live map</b><div id="map"></div><div class="wt" id="routetxt"></div></div>
+      </div>
+    </section>
+
+    <section class="cartpanel" id="accpanel" hidden>
+      <div class="phead"><span class="back" onclick="closeAccount()">&#8592;</span> My account</div>
+      <div class="pbody" id="accbody"></div>
+      <div class="pfoot"><button class="place out" onclick="logout()">Log out</button></div>
+    </section>
+
+    <section class="cartpanel" id="addrpanel" hidden>
+      <div class="phead"><span class="back" onclick="closeAddress()">&#8592;</span> Delivery address</div>
+      <div class="pbody">
+        <div class="box" id="saved-addr"></div>
+        <div class="box"><b>Add a new address</b>
+          <input class="fld" id="aline" placeholder="Flat / house no, building">
+          <input class="fld" id="aarea" placeholder="Area / street">
+          <input class="fld" id="aland" placeholder="Landmark (optional)">
+          <input class="fld" id="apin" placeholder="6-digit pincode" inputmode="numeric" maxlength="6">
+          <div class="chips" id="alabels"><span class="on" onclick="pickLabel('Home')">Home</span><span onclick="pickLabel('Work')">Work</span><span onclick="pickLabel('Other')">Other</span></div>
+          <div id="aerr" class="bad"></div>
+        </div>
+      </div>
+      <div class="pfoot"><button class="place" onclick="saveAddr()">Deliver here</button></div>
+    </section>
+
+    <section class="login" id="login">
+      <div class="lbig">&#129684;</div><h1>Diwali Dash</h1><p>Log in to start your festive shopping</p>
+      <input class="fld" id="lname" placeholder="Your name" maxlength="30" autocomplete="off">
+      <input class="fld" id="lphone" placeholder="10-digit mobile number" inputmode="numeric" maxlength="10" autocomplete="off">
+      <div id="lerr" class="bad"></div>
+      <button class="place" onclick="doLogin()">Continue</button>
+      <small>Demo app. Nothing is sent anywhere, your details stay on this phone. Use any name and a made-up number.</small>
+    </section>
+
+    <nav class="tabs">
+      <div class="on" onclick="goHome()">&#127968;<br>Home</div>
+      <div onclick="showCats()">&#128193;<br>Categories</div>
+      <div onclick="openCart()">&#128722;<br>Cart</div>
+      <div onclick="openAccount()">&#128100;<br>Account</div>
+    </nav>
+    <div class="toast" id="toast" hidden></div>
+  </div>
+</div>
+<script src="trie.js"></script>
+<script src="offers.js"></script>
+<script src="pricing.js"></script>
+<script src="recommend.js"></script>
+<script src="delivery.js"></script>
+<script src="account.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
