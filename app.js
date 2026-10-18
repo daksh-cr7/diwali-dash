@@ -1,3 +1,23 @@
+// OLD PHONES: newer emoji draw as empty boxes. Each emoji is tested once; if it is not drawn, an older look-alike is used.
+const CAT_EMOJI = {"Diyas":"\u{1F525}","Sweets":"\u{1F36C}","Dry fruits":"\u{1F330}","Gift hampers":"\u{1F381}","Rangoli":"\u{1F3A8}","Lights":"\u{1F4A1}",
+  "Chocolates":"\u{1F36B}","Pooja items":"\u{1F514}","Snacks":"\u{1F36A}","Decor":"\u{1F38A}","Tea & coffee":"\u2615","Fresh flowers":"\u{1F33C}",
+  "Cleaning":"\u{1F6C1}","Festive wear":"\u{1F457}"};
+const emojiCache = {};
+function emojiOK(ch) {
+  if (ch in emojiCache) return emojiCache[ch];
+  let ok = true;
+  try {
+    const c = document.createElement("canvas"); c.width = c.height = 40;
+    const x = c.getContext("2d"); x.textBaseline = "top"; x.font = "30px sans-serif";
+    const draw = t => { x.clearRect(0, 0, 40, 40); x.fillText(t, 0, 2); return x.getImageData(0, 0, 40, 40).data.join(); };
+    ok = draw(ch) !== draw("\u{10FFFF}");
+  } catch (e) {}
+  return emojiCache[ch] = ok;
+}
+const E = (ch, fallback) => emojiOK(ch) ? ch : fallback;
+// Phone browsers count the address bar in "100vh", which hides the bottom bar. This measures the real visible height instead.
+function setVH() { document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px"); }
+
 const DIWALI = new Date(2026, 10, 8, 18, 0, 0); // change if the date is different
 
 const categories = [
@@ -64,8 +84,9 @@ raw.push(
   ["Kids lehenga set","1 set",899,1299,"\u{1F457}","Festive wear"],["Bangles set","12 pcs",199,320,"\u{1F4FF}","Festive wear"],
   ["Dupatta","1 pc",299,449,"\u{1F9E3}","Festive wear"],["Ethnic jutti","1 pair",499,799,"\u{1F461}","Festive wear"]
 );
+categories.forEach(c => c[0] = E(c[0], CAT_EMOJI[c[1]]));
 const products = raw.map((r, i) => ({
-  id: i, base: r[2], name: r[0], wt: r[1], price: r[2], mrp: r[3], img: r[4], cat: r[5], bogo: !!r[6],
+  id: i, base: r[2], name: r[0], wt: r[1], price: r[2], mrp: r[3], img: E(r[4], CAT_EMOJI[r[5]]), cat: r[5], bogo: !!r[6],
   off: r[6] ? "BUY 1 GET 1" : Math.round((1 - r[2] / r[3]) * 100) + "% OFF"
 }));
 
@@ -128,13 +149,24 @@ function renderCats() {
   document.getElementById("cats").innerHTML =
     categories.map(c => `<div class="cat" onclick="showCats('${c[1]}')"><span>${c[0]}</span>${c[1]}</div>`).join("");
 }
+// REAL PHOTOS: the app looks for images/<item-name>.jpg (also .png, .webp, .jpeg). If no photo exists, the emoji is shown instead.
+const PHOTO_DIR = "";   // photos sit right next to index.html. If you put them in a folder called images, change this to "images/"
+const PHOTO_EXT = ["jpg", "png", "webp", "jpeg"], photoBad = {};
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const photoImg = (p, cls) => `<img class="${cls}" src="${PHOTO_DIR}${slug(p.name)}.jpg" alt="${p.name}" loading="lazy" onerror="photoNext(this,${p.id})">`;
+function photoNext(el, id) {
+  const i = (+el.dataset.i || 0) + 1;
+  if (i < PHOTO_EXT.length) { el.dataset.i = i; el.src = PHOTO_DIR + slug(products[id].name) + "." + PHOTO_EXT[i]; return; }
+  photoBad[id] = true;                                   // no photo found: remember it and show the emoji
+  const box = el.parentNode; box.className = box.className.replace(" hasph", ""); box.textContent = products[id].img;
+}
 function cardsHTML(list, why) {
   return list.map(p => {
     const q = cart[p.id] || 0;
     const action = q === 0
       ? (p.stock <= 0 ? `<button class="add" disabled>Sold out</button>` : `<button class="add" onclick="change(${p.id},1)">ADD</button>`)
       : `<div class="qty"><button onclick="change(${p.id},-1)">-</button>${q}<button onclick="change(${p.id},1)">+</button></div>`;
-    return `<div class="card${p.id === pop ? ' pop' : ''}" style="--t:${tints[p.cat]}"><div class="badge">${p.off}</div><div class="img" onclick="viewItem(${p.id})">${p.img}</div>
+    return `<div class="card${p.id === pop ? ' pop' : ''}" style="--t:${tints[p.cat]}"><div class="badge">${p.off}</div><div class="img${photoBad[p.id] ? "" : " hasph"}" onclick="viewItem(${p.id})">${photoBad[p.id] ? p.img : photoImg(p, "ph")}</div>
       <div class="name" onclick="viewItem(${p.id})">${p.name}</div>${why && why[p.id] ? '<div class="why">' + why[p.id] + '</div>' : ''}<div class="wt">${p.wt} ${stockTag(p)}</div>
       <div class="row"><div class="price">\u20B9${p.price}<s>\u20B9${p.mrp}</s></div>${action}</div></div>`;
   }).join("");
@@ -218,7 +250,7 @@ function renderPanel() {
   document.getElementById("saved").hidden = b.saved <= 0;
   document.getElementById("cartitems").innerHTML = items.length ? items.map(p => {
     const q = cart[p.id], free = q - payableUnits(p, q);
-    return `<div class="line"><div class="lemo">${p.img}</div>
+    return `<div class="line"><div class="lemo">${photoBad[p.id] ? p.img : photoImg(p, "phs")}</div>
       <div class="linfo"><div class="name">${p.name}</div><div class="wt">${p.wt}${free ? ' <b class="free">' + free + ' free</b>' : ''}</div></div>
       <div class="qty"><button onclick="change(${p.id},-1)">-</button>${q}<button onclick="change(${p.id},1)">+</button></div>
       <div class="lprice">${rs(lineTotal(p, q))}</div></div>`;
@@ -280,4 +312,6 @@ renderCats(); showHome(); renderCart(); tick(); updateFlashTimer();
 setInterval(() => { tick(); if (flashTick(products)) refresh(); updateFlashTimer(); }, 1000);
 setInterval(() => { simulateDemand(products); refresh(); }, 12000);
 restore(); document.getElementById("login").hidden = !!profile;
+document.querySelectorAll(".big,.lbig").forEach(e => e.textContent = E("\u{1FA94}", "\u{1F525}"));
+setVH(); window.addEventListener("resize", setVH);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
